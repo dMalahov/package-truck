@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Служба для работы с файлами, включая чтение и запись данных.
+ */
 @Slf4j
 public class FileService {
 
@@ -18,6 +21,12 @@ public class FileService {
 
 	public FileService() {}
 
+	/**
+	 * Получает список файлов в заданной директории.
+	 *
+	 * @param directory директория для поиска файлов.
+	 * @return список файлов.
+	 */
 	public List<File> getFiles(String directory) {
 		File dir = new File(directory); //path указывает на директорию
 		List<File> listFiles = new ArrayList<>();
@@ -29,6 +38,13 @@ public class FileService {
 		return listFiles;
 	}
 
+	/**
+	 * Читает текстовый файл и возвращает его содержимое в виде массива строк.
+	 *
+	 * @param directory директория файла.
+	 * @param fileName имя файла.
+	 * @return массив строк, содержащих содержимое файла.
+	 */
 	public String[] readFileTxt(String directory, String fileName) {
 		String content = null;
 		try {
@@ -41,6 +57,13 @@ public class FileService {
 		return content.split("\n\n");
 	}
 
+	/**
+	 * Читает содержимое JSON файла.
+	 *
+	 * @param directory директория файла.
+	 * @param fileName имя файла.
+	 * @return содержимое файла как строка.
+	 */
 	public String readFileJson(String directory, String fileName) {
 		String content = null;
 		try {
@@ -53,6 +76,11 @@ public class FileService {
 		return content;
 	}
 
+	/**
+	 * Записывает JSON данные в файл result.json.
+	 *
+	 * @param jsonBody тело JSON для записи.
+	 */
 	public void writeResultJson(String jsonBody) {
 		try {
 			Writer writer = new BufferedWriter(new OutputStreamWriter(

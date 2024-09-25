@@ -8,12 +8,24 @@ import model.TruckPackageModel;
 import utils.Mapper;
 
 import java.util.*;
+
+/**
+ * Служба для управления грузовиками и пакетами.
+ * Позволяет создавать грузовики различной сложности в зависимости от параметров пакетов.
+ */
 @Slf4j
 public class TruckService {
 	protected final int TRUCK_WIDTH = 6;
 	protected final int TRUCK_HEIGHT = 6;
 
 
+	/**
+	 * Простая загрузка грузовиков.
+	 *
+	 * @param readyPackages список готовых пакетов для загрузки
+	 * @param truckCount количество грузовиков для создания
+	 * @return список созданных грузовиков
+	 */
 	public List<Truck> createSimpleTruck(List<Package> readyPackages, int truckCount) {
 		List<Truck> trucks = new ArrayList<>();
 		for (Package readyPack : readyPackages) {
@@ -26,6 +38,13 @@ public class TruckService {
 		return Lists.newArrayList(trucks);
 	}
 
+	/**
+	 * Создает грузовики, учитывая высоту пакетов.
+	 *
+	 * @param readyPackages список готовых пакетов для загрузки
+	 * @param truckCount количество грузовиков для создания
+	 * @return список созданных грузовиков
+	 */
 	public List<Truck> createComplexTruckForHeight(List<Package> readyPackages, int truckCount) {
 		List<Truck> trucks = new ArrayList<>();
 		log.debug("Погрузка грузовика");
@@ -51,6 +70,13 @@ public class TruckService {
 		return Lists.newArrayList(trucks);
 	}
 
+
+	/**
+	 * Создает грузовики, учитывая ширину пакетов.
+	 *
+	 * @param readyPackages список готовых пакетов для загрузки
+	 * @return список созданных грузовиков
+	 */
 	public List<Truck> createComplexTruckForWidth(List<Package> readyPackages) {
 		log.info("Пересбор посылок по ширине");
 		List<Truck> trucks = new ArrayList<>();
@@ -74,6 +100,13 @@ public class TruckService {
 		return Lists.newArrayList(trucks);
 	}
 
+	/**
+	 * Создает грузовики из JSON.
+	 *
+	 * @param json JSON-строка, содержащая информацию о грузовиках и пакетах
+	 * @param truckCount количество грузовиков для создания
+	 * @return список созданных грузовиков
+	 */
 	public List<Truck> createTruckForJson(String json, int truckCount) {
 		log.info("Начало погрузки грузовиков...");
 		Mapper parserJson = new Mapper();
@@ -95,6 +128,11 @@ public class TruckService {
 		return Lists.newArrayList(trucks);
 	}
 
+	/**
+	 * Печатает детали предоставленного списка грузовиков в консоли.
+	 *
+	 * @param truckArrayList Список объектов Truck для печати. Если null, будет зафиксирована ошибка.
+	 */
 	public void printTruckInConsole(List<Truck> truckArrayList) {
 		if(truckArrayList != null) {
 			log.info("Печать в консоль...");
@@ -119,6 +157,12 @@ public class TruckService {
 		}
 	}
 
+	/**
+	 * Генерирует JSON-репрезентацию предоставленного списка грузовиков.
+	 *
+	 * @param truckArrayList Список объектов Truck для преобразования в JSON. Если null, возвращается пустой JSON.
+	 * @return Строка JSON, представляющая грузовики и их упаковки.
+	 */
 	public String getJsonForTruck(List<Truck> truckArrayList) {
 		log.info("Формирование json...");
 		Mapper parserJson = new Mapper();
@@ -143,6 +187,12 @@ public class TruckService {
 		return trucks;
 	}
 
+	/**
+	 * Вычисляет доступное вертикальное пространство в грузовике на основе его упаковок.
+	 *
+	 * @param packages Список объектов Package для расчета пространства по высоте.
+	 * @return Оставшееся пространство по высоте в грузовике.
+	 */
 	private int getFreeSpaceH(List<Package> packages) {
 		int sum = 0;
 		for (Package aPackage : packages) {
@@ -152,6 +202,12 @@ public class TruckService {
 		return TRUCK_HEIGHT-sum;
 	}
 
+	/**
+	 * Вычисляет доступное пространство по ширине в грузовике на основе его упаковок.
+	 *
+	 * @param packages Список объектов Package для расчета пространства по ширине.
+	 * @return Оставшееся пространство по ширине в грузовике.
+	 */
 	private int getFreeSpaceW(List<Package> packages) {
 		int sum = 0;
 		for (Package aPackage : packages) {
@@ -161,11 +217,24 @@ public class TruckService {
 		return TRUCK_WIDTH-sum;
 	}
 
+	/**
+	 * Дополняет данную строку справа до заданной длины.
+	 *
+	 * @param s Строка для дополнения.
+	 * @param n Общая длина после дополнения.
+	 * @return Дополненная строка.
+	 */
 	private static String padRight(String s, int n) {
 		return String.format("%-" + n + "s", s);
 	}
 
 
+	/**
+	 * Преобразует объект TruckPackageModel.Truck из Json в список объектов Package.
+	 *
+	 * @param truck Объект TruckPackageModel.Truck для преобразования.
+	 * @return Список объектов Package, полученных из заказов грузовика.
+	 */
 	private List<Package> getPackagesTruckForJson(TruckPackageModel.Truck truck) {
 		log.info("Начало сортировки посылок...");
 		ArrayList<TruckPackageModel.Order> packages = truck.getOrders();
@@ -183,6 +252,13 @@ public class TruckService {
 		return readyPackages;
 	}
 
+	/**
+	 * Проверяет, достаточно ли грузовиков для загрузки по количеству грузовиков.
+	 *
+	 * @param truckCount Доступное количество грузовиков.
+	 * @param trucks Список объектов Truck для проверки.
+	 * @throws RuntimeException если недостаточно грузовиков для загрузки.
+	 */
 	private void checkTrucksCount(int truckCount, List<Truck> trucks) {
 		if(truckCount < trucks.size()) {
 			log.error("Недостаточно грузовиков для погрузки");

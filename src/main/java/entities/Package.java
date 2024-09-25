@@ -2,6 +2,9 @@ package entities;
 
 import lombok.Getter;
 
+/**
+ * Класс, представляющий посылку с заданными параметрами.
+ */
 @Getter
 public class Package {
 
@@ -10,6 +13,14 @@ public class Package {
 	protected int widthBottom;
 	protected  String[] pack;
 
+	/**
+	 * Конструктор для создания посылки.
+	 *
+	 * @param height высота посылки.
+	 * @param widthTop ширина верхней части.
+	 * @param widthBottom ширина нижней части.
+	 * @param pack содержимое посылки.
+	 */
 	public Package(int height, int widthTop, int widthBottom, String[] pack) {
 		this.height = height;
 		this.widthTop = widthTop;

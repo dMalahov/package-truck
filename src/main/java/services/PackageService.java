@@ -4,9 +4,20 @@ import entities.Package;
 import entities.Truck;
 import lombok.extern.slf4j.Slf4j;
 import java.util.*;
+
+/**
+ * Класс, отвечающий за сортировку и объединение различных типов посылок.
+ */
 @Slf4j
 public class PackageService {
 
+	/**
+	 * Сортирует простые заказы из массива необработанных строк посылок.
+	 *
+	 * @param unassembledPackageLine массив строк, где каждая строка представляет
+	 *                               необработанную посылку.
+	 * @return список готовых посылок, отсортированных по ширине нижней части.
+	 */
 	public List<Package> sortSimpleOrders(String[] unassembledPackageLine) {
 		List<Package> readyPackages = new ArrayList();
 		for (String unassembledPackages : unassembledPackageLine) {
@@ -20,6 +31,12 @@ public class PackageService {
 		return sortRevertReadyPackage(readyPackages);
 	}
 
+	/**
+	 * Сортирует сложные заказы на основе списка грузовиков.
+	 *
+	 * @param listTrucks список грузовиков, содержащих посылки.
+	 * @return список готовых посылок, отсортированных по ширине нижней части.
+	 */
 	public List<Package> sortComplexOrders(List<Truck> listTrucks) {
 		List<Package> readyPackages = new ArrayList<>();
 		for (Truck truck : listTrucks) {
@@ -40,6 +57,13 @@ public class PackageService {
 		return sortRevertReadyPackage(readyPackages);
 	}
 
+	/**
+	 * Объединяет две посылки в одну.
+	 *
+	 * @param pkg1 первая посылка для объединения.
+	 * @param pkg2 вторая посылка для объединения.
+	 * @return массив строк, представляющий объединённую посылку.
+	 */
 	private String[] mergePackages(Package pkg1, Package pkg2) {
 		// Получаем пакеты из обоих объектов Package
 		String[] pack1 = pkg1.getPack();
@@ -70,6 +94,12 @@ public class PackageService {
 		return mergedArray;
 	}
 
+	/**
+	 * Сортирует список посылок по ширине нижней части в порядке возрастания.
+	 *
+	 * @param readyPackages список посылок для сортировки.
+	 * @return отсортированный список посылок.
+	 */
 	private List<Package> sortRevertReadyPackage(List<Package> readyPackages) {
 		readyPackages.sort(Comparator.comparingInt(Package::getWidthBottom));
 		return readyPackages;
