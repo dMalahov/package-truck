@@ -1,5 +1,8 @@
 package entities;
 
+import lombok.Getter;
+
+@Getter
 public class Package {
 
 	protected int height;
@@ -12,22 +15,6 @@ public class Package {
 		this.widthTop = widthTop;
 		this.widthBottom = widthBottom;
 		this.pack = pack;
-	}
-
-	public int getHeight() {
-		return height;
-	}
-
-	public int getWidthTop() {
-		return widthTop;
-	}
-
-	public int getWidthBottom() {
-		return widthBottom;
-	}
-
-	public String[] getPack() {
-		return pack;
 	}
 
 

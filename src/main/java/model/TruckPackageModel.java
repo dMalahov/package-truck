@@ -1,4 +1,4 @@
-package dto;
+package model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -20,16 +20,16 @@ public class TruckPackageModel {
 	@AllArgsConstructor
 	public static class Truck {
 		@JsonProperty("packages")
-		ArrayList<PackageModel> packages;
+		ArrayList<Order> orders;
 	}
 
 	@Getter
 	@Builder
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class PackageModel {
-		@JsonProperty("string")
-		String string;
+	public static class Order {
+		@JsonProperty("package")
+		String order;
 	}
 
 }

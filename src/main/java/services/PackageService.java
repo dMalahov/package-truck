@@ -1,148 +1,77 @@
 package services;
 
-import com.google.common.collect.Lists;
-import entities.CompletePack;
 import entities.Package;
+import entities.Truck;
 import lombok.extern.slf4j.Slf4j;
-import utils.Space;
-
 import java.util.*;
 @Slf4j
 public class PackageService {
 
-	Space space = new Space();
-
-	/*Отправка собранного финального вида пакетов для погрузки*/
-	public List<Package> createNewPackageForTruck(String[] unassembledPackageLine, String mode, String typeOut) {
-		log.info("Начало сортировки посылок...");
-		List<Package> completePackage;
-		List<Package> newPackage = sortOrder(unassembledPackageLine);
-		if(mode.toUpperCase(Locale.ROOT).contains("S") || typeOut.toUpperCase(Locale.ROOT).contains("JSON")) {
-			completePackage = newPackage;
-		} else {
-			completePackage = createNewPackage(newPackage);
-		}
-		log.info("Конец сортировки посылок...");
-		return sortRevertReadyPackage(completePackage);
-	}
-
-	/*Первоначальная сортировка полученного списка*/
-	private List<Package> sortOrder(String[] unassembledPackageLine) {
+	public List<Package> sortSimpleOrders(String[] unassembledPackageLine) {
 		List<Package> readyPackages = new ArrayList();
-		int i=0;
 		for (String unassembledPackages : unassembledPackageLine) {
-			i += 1;
-			log.debug("Сортировка посылки: "+i);
-			String[] unassembledPackage = unassembledPackages.split(":");
+			log.debug("Сортировка посылки");
+			String[] unassembledPackage = unassembledPackages.split("\n");
 			int h = unassembledPackage.length;
 			int wTop = unassembledPackage[0].length();
 			int wBotton = unassembledPackage[h-1].length();
 			readyPackages.add(new Package(h,wTop,wBotton,unassembledPackage));
 		}
-		return sortReadyPackage(readyPackages);
+		return sortRevertReadyPackage(readyPackages);
 	}
 
-	/*Сбор нового списка пакетов в утрамбованном виде с проверкой по ширине*/
-	private List<Package> createNewPackage(List<Package> readyPackages) {
-		List<CompletePack> trucks = new ArrayList();
-		trucks.add(new CompletePack());
-		int i=0;
-		for (Package readyPack : readyPackages) {
-			i += 1;
-			ListIterator<CompletePack> truck = trucks.listIterator();
-			boolean packageNotUsed = true;
-			while(packageNotUsed && truck.hasNext()) {
-				CompletePack next = truck.next();
-				if(space.getFreeSpaceW(next.getPackages())>=readyPack.getWidthBottom()){
-					next.getPackages().add(readyPack);
-					packageNotUsed = false;
-				}
-			}
-			if(packageNotUsed) {
-				CompletePack newTruck = new CompletePack();
-				truck.add(newTruck);
-				newTruck.getPackages().add(readyPack);
-			}
-		}
-		return sortReadyPackage(completeNewPackage(Lists.newArrayList(trucks)));
-	}
-
-	/*Сбор отдельного утрамбованного пакета*/
-	private List<Package> completeNewPackage(List<CompletePack> completePacks) {
+	public List<Package> sortComplexOrders(List<Truck> listTrucks) {
 		List<Package> readyPackages = new ArrayList<>();
-		for (CompletePack completePack : Lists.newArrayList(completePacks)) {
-			if(completePack.getPackages().size()>1) {
+		for (Truck truck : listTrucks) {
+			if(truck.getPackages().size()>1) {
 				readyPackages.add(new Package(
-						Math.max(completePack.getPackages().get(0).getHeight(), completePack.getPackages().get(1).getHeight()),
-						Math.max(completePack.getPackages().get(0).getWidthTop(), completePack.getPackages().get(1).getWidthTop()),
-						completePack.getPackages().get(0).getWidthBottom() + completePack.getPackages().get(1).getWidthBottom(),
-						sumArrayPack(completePack.getPackages().get(0).getPack(), completePack.getPackages().get(1).getPack())));
+						Math.max(truck.getPackages().get(0).getHeight(), truck.getPackages().get(1).getHeight()),
+						Math.max(truck.getPackages().get(0).getWidthTop(), truck.getPackages().get(1).getWidthTop()),
+						truck.getPackages().get(0).getWidthBottom() + truck.getPackages().get(1).getWidthBottom(),
+						mergePackages(truck.getPackages().get(0), truck.getPackages().get(1))));
 			} else {
 				readyPackages.add(new Package(
-						completePack.getPackages().get(0).getHeight(),
-						completePack.getPackages().get(0).getWidthTop(),
-						completePack.getPackages().get(0).getWidthBottom(),
-						completePack.getPackages().get(0).getPack()));
+						truck.getPackages().get(0).getHeight(),
+						truck.getPackages().get(0).getWidthTop(),
+						truck.getPackages().get(0).getWidthBottom(),
+						truck.getPackages().get(0).getPack()));
 			}
 		}
-		return readyPackages;
+		return sortRevertReadyPackage(readyPackages);
 	}
 
-	/*Сам метод предполагал суммирование пакетов для утрамбовывания,но вышел кошмар. Поправить не успеваю и тут главный косяк всей логики*/
-	private String[] sumArrayPack(String[] a, String[] b) {
-		boolean aTrue = true;
-		String sum = "";
-		String sum2 = "";
-		int count = 0;
-		String[] c;
-		String[] d;
-		if(a.length> b.length) {
-			c = new String[a.length];
-			c = a;
-			d = new String[b.length];
-			d = b;
-		} else {
-			d = new String[a.length];
-			d = a;
-			c = new String[b.length];
-			c = b;
+	private String[] mergePackages(Package pkg1, Package pkg2) {
+		// Получаем пакеты из обоих объектов Package
+		String[] pack1 = pkg1.getPack();
+		String[] pack2 = pkg2.getPack();
+
+		// Определяем максимальную длину, чтобы избежать выхода за границы
+		int maxLength = Math.max(pack1.length, pack2.length);
+		List<String> mergedList = new ArrayList<>();
+
+		for (int i = 0; i < maxLength; i++) {
+			StringBuilder sb = new StringBuilder();
+			if (i < pack1.length) {
+				sb.append(pack1[i]);
+			}
+			if (i < pack2.length) {
+				sb.append(pack2[i]);
+			}
+			mergedList.add(sb.toString());
 		}
 
-		for(int i = d.length-1; i >= 0; i--) {
-			sum += c[i];
-			sum += d[i];
-			sum += "\n";
-			count++;
+		// Преобразуем список в массив для возврата
+		String[] mergedArray = new String[mergedList.size()];
+		int j = 0;
+		for (int i = mergedList.size()-1; i >= 0; i--) {
+			mergedArray[j] = mergedList.get(i);
+			j++;
 		}
-		if(count<c.length) {
-			for (int i = count; i >= c.length - 1; i--) {
-				sum2 += c[i];
-				sum2 += "\n";
-			}
-		}
-		String[]v = new String[]{sum2+sum};
-		return v;
+		return mergedArray;
 	}
 
-	/*Обратная сортировка по основания посылки*/
-	private List<Package> sortReadyPackage(List<Package> readyPackages){
-		Collections.sort(readyPackages, new Comparator<Package>() {
-			@Override
-			public int compare(Package o1, Package o2) {
-				return o2.getWidthBottom() - o1.getWidthBottom();
-			}
-		});
-		return readyPackages;
-	}
-
-	/*Прямая сортировка по основания посылки*/
-	private List<Package> sortRevertReadyPackage(List<Package> readyPackages){
-		Collections.sort(readyPackages, new Comparator<Package>() {
-			@Override
-			public int compare(Package o1, Package o2) {
-				return o1.getWidthBottom() - o2.getWidthBottom();
-			}
-		});
+	private List<Package> sortRevertReadyPackage(List<Package> readyPackages) {
+		readyPackages.sort(Comparator.comparingInt(Package::getWidthBottom));
 		return readyPackages;
 	}
 

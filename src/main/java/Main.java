@@ -1,10 +1,8 @@
-import entities.CompletePack;
+import entities.ConsoleValues;
 import entities.Package;
 import entities.Truck;
-import enums.Directory;
 import lombok.extern.slf4j.Slf4j;
 import services.FileService;
-import services.JsonService;
 import services.PackageService;
 import services.TruckService;
 import view.ConsoleInput;
@@ -15,35 +13,72 @@ import java.util.*;
 public class Main {
 
 	public static void main(String[] args) {
-		log.info("Стартуем приложение...");
 		Main.start();
 	}
 
 	static void start() {
 		List<Truck> trucks;
-		List<Package> readyPackages;
+		List<Package> packages;
 		ConsoleInput console = new ConsoleInput();
 		FileService fileService = new FileService();
-		JsonService jsonService = new JsonService();
+
+		ConsoleValues inputValues = console.getFileNameAndMode(fileService.getFiles(fileService.MAIN_DIR));
+
+		if(inputValues.getTypeLoad().toUpperCase(Locale.ROOT).equals("JSON")) {
+			trucks = createTruckJson(inputValues);
+		} else {
+			packages = sortPackageTxt(inputValues);
+			trucks = createTruckTxt(inputValues, packages);
+		}
+		doResult(inputValues, trucks);
+	}
+
+	private static List<Package> sortPackageTxt(ConsoleValues inputValues) {
+		List<Package> readyPackages;
+		FileService fileService = new FileService();
 		PackageService packageService = new PackageService();
 		TruckService truckService = new TruckService();
-
-		String[] settingsFromConsole = console.getFileNameAndMode();
-		if(settingsFromConsole[1].toUpperCase(Locale.ROOT).equals("JSON")) {
-			String json = fileService.readFileJson(Directory.MAIN_DIR.getPath(),settingsFromConsole[0]);
-			trucks = jsonService.getTruckToJson(json, Integer.parseInt(settingsFromConsole[4]));
+		String[] txtFile = fileService.readFileTxt(fileService.MAIN_DIR,inputValues.getFileName());
+		if(inputValues.getMode().toUpperCase(Locale.ROOT).contains("S") || inputValues.getTypeLoad().toUpperCase(Locale.ROOT).equals("JSON")) {
+			readyPackages = packageService.sortSimpleOrders(txtFile);
 		} else {
-			String[] packageFirstList = fileService.readFileTxt(Directory.MAIN_DIR.getPath(),settingsFromConsole[0]);
-			readyPackages = packageService.createNewPackageForTruck(packageFirstList,settingsFromConsole[2],settingsFromConsole[3]);
-			trucks = truckService.createTruckWithPackage(readyPackages,settingsFromConsole[2],Integer.parseInt(settingsFromConsole[4]));
+			List<Package> firstPackages =packageService.sortSimpleOrders(txtFile);
+			List<Truck> mixTrucks = truckService.createComplexTruckForWidth(firstPackages);
+			readyPackages = packageService.sortComplexOrders(mixTrucks);
 		}
-		if(settingsFromConsole[3].toUpperCase(Locale.ROOT).equals("JSON")) {
-			String resultJson = jsonService.createJsonForTruck(trucks);
+		return readyPackages;
+	}
+
+	private static List<Truck> createTruckTxt(ConsoleValues inputValues, List<Package> packages) {
+		List<Truck> readyTrucks;
+		TruckService truckService = new TruckService();
+		if(inputValues.getMode().toUpperCase(Locale.ROOT).contains("S")) {
+			readyTrucks = truckService.createSimpleTruck(packages,inputValues.getTruckCount());
+		} else {
+			readyTrucks = truckService.createComplexTruckForHeight(packages,inputValues.getTruckCount());
+		}
+		return readyTrucks;
+	}
+
+	private static List<Truck> createTruckJson(ConsoleValues inputValues) {
+		FileService fileService = new FileService();
+		TruckService truckService = new TruckService();
+		String fileJson = fileService.readFileJson(fileService.MAIN_DIR,inputValues.getFileName());
+		return truckService.createTruckForJson(fileJson, inputValues.getTruckCount());
+	}
+
+	private static void doResult(ConsoleValues inputValues, List<Truck> trucks) {
+		FileService fileService = new FileService();
+		TruckService truckService = new TruckService();
+		if(inputValues.getTypePrint().toUpperCase(Locale.ROOT).equals("JSON")) {
+			String resultJson = truckService.getJsonForTruck(trucks);
 			fileService.writeResultJson(resultJson);
 		} else {
-			console.printTruckWithSpace(trucks);
+			truckService.printTruckInConsole(trucks);
 		}
 	}
+
+
 
 
 

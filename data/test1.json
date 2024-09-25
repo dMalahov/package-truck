@@ -3,30 +3,30 @@
     {
       "packages": [
         {
-          "string": "777:7777"
+          "package": "777:7777"
         },
         {
-          "string": "8888:8888"
+          "package": "8888:8888"
         }
       ]
     },
     {
       "packages": [
         {
-          "string": "666:666"
+          "package": "666:666"
         },
         {
-          "string": "999:999:999"
+          "package": "999:999:999"
         }
       ]
     },
     {
       "packages": [
         {
-          "string": "1"
+          "package": "1"
         },
         {
-          "string": "22"
+          "package": "22"
         }
       ]
     }

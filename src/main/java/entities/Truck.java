@@ -1,17 +1,14 @@
 package entities;
 
-import dto.TruckPackageModel;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class Truck {
 
 	protected List<Package> packages = new ArrayList();
 	public Truck() {}
-
-	public List<Package> getPackages() {
-		return packages;
-	}
 
 }
