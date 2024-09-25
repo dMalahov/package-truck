@@ -16,8 +16,6 @@ public class FileService {
 
 	public final String MAIN_DIR = System.getProperty("user.dir") + "\\data\\";
 
-	public final String TEST_DIR = System.getProperty("user.dir") + "\\src\\test\\resources\\";
-
 	public FileService() {}
 
 	public List<File> getFiles(String directory) {
